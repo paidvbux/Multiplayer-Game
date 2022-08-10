@@ -4,13 +4,12 @@
 //━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━	
 
 #if UNIVERSAL_RENDERER
-using UnityEngine;
-using UnityEditor;
-using UnityEditor.Rendering;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using System;
 using System.Reflection;
+using UnityEditor;
+using UnityEditor.Rendering;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace StylizedWater
 {
@@ -297,7 +296,7 @@ namespace StylizedWater
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Depth", EditorStyles.helpBox);
-            if(stylizedWater.meshRenderer.sharedMaterial.shader.name != mobileShaderName) EditorGUILayout.PropertyField(useColorGradient, EditorGUIUtility.TrTextContent("Use Gradient"));
+            if (stylizedWater.meshRenderer.sharedMaterial.shader.name != mobileShaderName) EditorGUILayout.PropertyField(useColorGradient, EditorGUIUtility.TrTextContent("Use Gradient"));
 
             if (!usesColorGradient)
             {

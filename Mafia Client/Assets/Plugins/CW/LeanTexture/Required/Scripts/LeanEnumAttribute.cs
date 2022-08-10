@@ -17,19 +17,19 @@ namespace Lean.Texture
 #if UNITY_EDITOR
 namespace Lean.Texture
 {
-	using UnityEditor;
+    using UnityEditor;
 
-	[CustomPropertyDrawer(typeof(LeanEnumAttribute))]
-	public class LeanEnumDrawer : PropertyDrawer
-	{
-		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-		{
-			var enumAttribute = (LeanEnumAttribute)attribute;
+    [CustomPropertyDrawer(typeof(LeanEnumAttribute))]
+    public class LeanEnumDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var enumAttribute = (LeanEnumAttribute)attribute;
 
-			var enumEntry = (System.Enum)System.Enum.ToObject(enumAttribute.EnumType, property.intValue);
+            var enumEntry = (System.Enum)System.Enum.ToObject(enumAttribute.EnumType, property.intValue);
 
-			property.intValue = (int)(object)EditorGUI.EnumPopup(position, label, enumEntry);
-		}
-	}
+            property.intValue = (int)(object)EditorGUI.EnumPopup(position, label, enumEntry);
+        }
+    }
 }
 #endif

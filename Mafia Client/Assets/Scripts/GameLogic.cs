@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameLogic : MonoBehaviour
@@ -22,10 +20,12 @@ public class GameLogic : MonoBehaviour
 
     public GameObject LocalPlayerPrefab => localPlayerPrefab;
     public GameObject PlayerPrefab => playerPrefab;
+    public Transform PlayerParent => playerParent;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject localPlayerPrefab;
     [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private Transform playerParent;
 
     private void Awake()
     {

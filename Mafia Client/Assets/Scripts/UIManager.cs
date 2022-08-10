@@ -1,8 +1,8 @@
+using RiptideNetworking;
+using TMPro;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
-using RiptideNetworking;
 
 public class UIManager : MonoBehaviour
 {
@@ -31,7 +31,7 @@ public class UIManager : MonoBehaviour
 
     void Awake()
     {
-        _singleton = this;    
+        _singleton = this;
     }
 
     public void ConnectClicked()
@@ -47,14 +47,21 @@ public class UIManager : MonoBehaviour
     {
         usernameField.interactable = true;
         loadingUI.SetActive(false);
+        gameUI.SetActive(false);
         failedconnectionUI.SetActive(true);
+        foreach (KeyValuePair<ushort, Player> player in Player.room)
+        {
+            Destroy(player.Value.gameObject);
+        }
+        Player.room.Clear();
     }
-    
+
     public void SendName()
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.name);
         message.AddString(usernameField.text);
         loadingUI.SetActive(false);
+        gameUI.SetActive(true);
         NetworkManager.Singleton.client.Send(message);
     }
 }

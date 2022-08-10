@@ -3,8 +3,8 @@
 // https://alexander-ameye.gitbook.io/stylized-water/
 //━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━	
 
-using UnityEngine;
 using StylizedWater;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class BuoyantObject : MonoBehaviour
@@ -56,7 +56,7 @@ public class BuoyantObject : MonoBehaviour
     {
         rb.useGravity = true;
     }
-    
+
     void FixedUpdate()
     {
         int effectorAmount = effectors.Length;

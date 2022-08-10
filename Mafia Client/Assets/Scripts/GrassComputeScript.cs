@@ -3,9 +3,8 @@
 // and  NedMakesGames https://gist.github.com/NedMakesGames/3e67fabe49e2e3363a657ef8a6a09838
 // for the base setup for compute shaders
 using System;
-using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEditor;
+using UnityEngine;
 
 [ExecuteInEditMode]
 public class GrassComputeScript : MonoBehaviour
@@ -318,7 +317,7 @@ public class GrassComputeScript : MonoBehaviour
     {
 
         interactors = (ShaderInteractor[])FindObjectsOfType(typeof(ShaderInteractor));
-        
+
         // Send things to compute shader that dont need to be set every frame
         m_InstantiatedComputeShader.SetMatrix("_LocalToWorld", transform.localToWorldMatrix);
         m_InstantiatedComputeShader.SetFloat("_Time", Time.time);

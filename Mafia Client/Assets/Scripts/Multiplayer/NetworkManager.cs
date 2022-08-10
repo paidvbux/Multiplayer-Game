@@ -38,13 +38,13 @@ public class NetworkManager : MonoBehaviour
 
     private void Awake()
     {
-        Singleton = this;   
+        Singleton = this;
     }
 
     private void Start()
     {
         RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
-        
+
         client = new Client();
         client.Connected += DidConnect;
         client.ConnectionFailed += FailedToConnect;
@@ -70,6 +70,7 @@ public class NetworkManager : MonoBehaviour
     private void DidConnect(object sender, EventArgs e)
     {
         UIManager.Singleton.SendName();
+        Player.UpdatePlayers();
     }
 
     private void FailedToConnect(object sender, EventArgs e)
@@ -80,6 +81,8 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         Destroy(Player.room[e.Id].gameObject);
+        Player.room.Remove(e.Id);
+        Player.UpdatePlayers();
     }
 
     private void DidDisconnect(object sender, EventArgs e)

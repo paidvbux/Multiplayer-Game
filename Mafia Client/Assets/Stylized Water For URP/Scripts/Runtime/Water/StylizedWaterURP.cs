@@ -6,11 +6,8 @@
 #if UNIVERSAL_RENDERER
 using UnityEngine;
 #if UNITY_EDITOR
-using UnityEditor;
 #endif
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.Experimental.Rendering;
 
 namespace StylizedWater
 {

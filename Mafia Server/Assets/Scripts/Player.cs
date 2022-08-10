@@ -1,6 +1,7 @@
 using RiptideNetworking;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -19,6 +20,7 @@ public class Player : MonoBehaviour
 
     public static void Spawn(ushort id, string username)
     {
+        id -= (ushort)NetworkManager.Singleton.clientsDisconnected;
         foreach (Player otherPlayer in list.Values)
             otherPlayer.SendSpawned(id);
 
@@ -53,7 +55,7 @@ public class Player : MonoBehaviour
     [MessageHandler((ushort)ClientToServerId.name)]
     private static void Name(ushort fromClientId, Message message)
     {
-        Spawn(fromClientId, message.GetString());
+        Spawn((ushort)(fromClientId - (ushort)NetworkManager.Singleton.clientsDisconnected), message.GetString());
     }
     #endregion
 }

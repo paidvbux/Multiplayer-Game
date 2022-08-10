@@ -1,177 +1,177 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.Burst;
+using UnityEngine;
 
 namespace Lean.Texture
 {
-	/// <summary>This class stores information about a texture that is currently being generated.
-	/// NOTE: After getting an instance of this class from the <b>LeanTexture.TrySchedule</b> method, you must manually call its <b>Complete</b> method within 3 frames.</summary>
-	public class LeanPendingTexture
-	{
-		public NativeArray<float4> Pixels;
+    /// <summary>This class stores information about a texture that is currently being generated.
+    /// NOTE: After getting an instance of this class from the <b>LeanTexture.TrySchedule</b> method, you must manually call its <b>Complete</b> method within 3 frames.</summary>
+    public class LeanPendingTexture
+    {
+        public NativeArray<float4> Pixels;
 
-		public TextureWrapMode WrapU;
+        public TextureWrapMode WrapU;
 
-		public TextureWrapMode WrapV;
+        public TextureWrapMode WrapV;
 
-		public int2 Size;
+        public int2 Size;
 
-		public bool Linear;
+        public bool Linear;
 
-		public JobHandle Handle;
+        public JobHandle Handle;
 
-		public Texture2D OutputTexture;
+        public Texture2D OutputTexture;
 
-		public List<System.IDisposable> tempDatas = new List<System.IDisposable>();
+        public List<System.IDisposable> tempDatas = new List<System.IDisposable>();
 
-		private NativeArray<float4> swapBuffer;
+        private NativeArray<float4> swapBuffer;
 
-		[BurstCompile]
-		struct DownsampleJob : IJobParallelFor
-		{
-			[WriteOnly] public NativeArray<float4> Dst;
-			[ ReadOnly] public int2                DstSize;
-			[ ReadOnly] public NativeArray<float4> Src;
-			[ ReadOnly] public int2                SrcSize;
+        [BurstCompile]
+        struct DownsampleJob : IJobParallelFor
+        {
+            [WriteOnly] public NativeArray<float4> Dst;
+            [ReadOnly] public int2 DstSize;
+            [ReadOnly] public NativeArray<float4> Src;
+            [ReadOnly] public int2 SrcSize;
 
-			public void Execute(int index)
-			{
-				var x  = index % DstSize.x;
-				var y  = index / DstSize.x;
-				var uv = new float2(x, y) / (DstSize - 1);
+            public void Execute(int index)
+            {
+                var x = index % DstSize.x;
+                var y = index / DstSize.x;
+                var uv = new float2(x, y) / (DstSize - 1);
 
-				Dst[index] = LeanSample.Tex2D_Point(Src, SrcSize, uv);
-			}
-		}
+                Dst[index] = LeanSample.Tex2D_Point(Src, SrcSize, uv);
+            }
+        }
 
-		[BurstCompile]
-		struct ConvertToGammaJob : IJobParallelFor
-		{
-			public NativeArray<float4> Pixels;
+        [BurstCompile]
+        struct ConvertToGammaJob : IJobParallelFor
+        {
+            public NativeArray<float4> Pixels;
 
-			public void Execute(int index)
-			{
-				var color = (Color)(Vector4)Pixels[index];
+            public void Execute(int index)
+            {
+                var color = (Color)(Vector4)Pixels[index];
 
-				Pixels[index] = (Vector4)color.gamma;
-			}
-		}
+                Pixels[index] = (Vector4)color.gamma;
+            }
+        }
 
-		public void DoubleBuffer(ref NativeArray<float4> inData, ref NativeArray<float4> outData)
-		{
-			var size = default(int2); DoubleBuffer(ref inData, ref outData, ref size);
-		}
+        public void DoubleBuffer(ref NativeArray<float4> inData, ref NativeArray<float4> outData)
+        {
+            var size = default(int2); DoubleBuffer(ref inData, ref outData, ref size);
+        }
 
-		public void DoubleBuffer(ref NativeArray<float4> inData, ref NativeArray<float4> outData, ref int2 inoutSize)
-		{
-			if (swapBuffer.IsCreated == false)
-			{
-				swapBuffer = new NativeArray<float4>(Pixels.Length, Allocator.TempJob); Register(swapBuffer);
-			}
+        public void DoubleBuffer(ref NativeArray<float4> inData, ref NativeArray<float4> outData, ref int2 inoutSize)
+        {
+            if (swapBuffer.IsCreated == false)
+            {
+                swapBuffer = new NativeArray<float4>(Pixels.Length, Allocator.TempJob); Register(swapBuffer);
+            }
 
-			inoutSize = Size;
+            inoutSize = Size;
 
-			inData = Pixels;
-			outData = swapBuffer;
+            inData = Pixels;
+            outData = swapBuffer;
 
-			Pixels     = outData;
-			swapBuffer = inData;
-		}
+            Pixels = outData;
+            swapBuffer = inData;
+        }
 
-		public void DoubleBufferResize(ref NativeArray<float4> inData, ref NativeArray<float4> outData, ref int2 inSize, ref int2 outSize, int2 newSize)
-		{
-			if (newSize.x <= 0) newSize.x = Size.x;
-			if (newSize.y <= 0) newSize.y = Size.y;
+        public void DoubleBufferResize(ref NativeArray<float4> inData, ref NativeArray<float4> outData, ref int2 inSize, ref int2 outSize, int2 newSize)
+        {
+            if (newSize.x <= 0) newSize.x = Size.x;
+            if (newSize.y <= 0) newSize.y = Size.y;
 
-			inSize  = Size;
-			outSize = newSize;
+            inSize = Size;
+            outSize = newSize;
 
-			if (Size.x == outSize.x && Size.y == outSize.y)
-			{
-				DoubleBuffer(ref inData, ref outData);
-			}
-			else
-			{
-				swapBuffer = new NativeArray<float4>(outSize.x * outSize.y, Allocator.TempJob); Register(swapBuffer);
+            if (Size.x == outSize.x && Size.y == outSize.y)
+            {
+                DoubleBuffer(ref inData, ref outData);
+            }
+            else
+            {
+                swapBuffer = new NativeArray<float4>(outSize.x * outSize.y, Allocator.TempJob); Register(swapBuffer);
 
-				inData  = Pixels;
-				outData = swapBuffer;
+                inData = Pixels;
+                outData = swapBuffer;
 
-				Pixels     = outData;
-				swapBuffer = inData;
-			}
+                Pixels = outData;
+                swapBuffer = inData;
+            }
 
-			Size = newSize;
-		}
+            Size = newSize;
+        }
 
-		public void Downsample(NativeArray<float4> srcData, int2 srcSize, ref NativeArray<float4> dstData, ref int2 dstSize)
-		{
-			var downsample = new DownsampleJob();
+        public void Downsample(NativeArray<float4> srcData, int2 srcSize, ref NativeArray<float4> dstData, ref int2 dstSize)
+        {
+            var downsample = new DownsampleJob();
 
-			dstSize = srcSize / 2;
-			dstData = new NativeArray<float4>(dstSize.x * dstSize.y, Allocator.TempJob); Register(dstData);
-			
-			downsample.Src     = srcData;
-			downsample.SrcSize = srcSize;
-			downsample.Dst     = dstData;
-			downsample.DstSize = dstSize;
+            dstSize = srcSize / 2;
+            dstData = new NativeArray<float4>(dstSize.x * dstSize.y, Allocator.TempJob); Register(dstData);
 
-			Handle = downsample.Schedule(dstData.Length, 32, Handle);
-		}
+            downsample.Src = srcData;
+            downsample.SrcSize = srcSize;
+            downsample.Dst = dstData;
+            downsample.DstSize = dstSize;
 
-		public void ConvertToGamma()
-		{
-			var convert = new ConvertToGammaJob();
-			
-			convert.Pixels = Pixels;
+            Handle = downsample.Schedule(dstData.Length, 32, Handle);
+        }
 
-			Handle = convert.Schedule(Pixels.Length, 32, Handle);
-		}
+        public void ConvertToGamma()
+        {
+            var convert = new ConvertToGammaJob();
 
-		public void Register(System.IDisposable tempData)
-		{
-			tempDatas.Add(tempData);
-		}
+            convert.Pixels = Pixels;
 
-		public static LeanPendingTexture Create(int2 size, TextureWrapMode wrapU, TextureWrapMode wrapV, bool linear)
-		{
-			var data = pool.Count > 0 ? pool.Pop() : new LeanPendingTexture();
+            Handle = convert.Schedule(Pixels.Length, 32, Handle);
+        }
 
-			data.Pixels = new NativeArray<float4>(size.x * size.y, Allocator.TempJob); data.Register(data.Pixels);
-			data.Size   = size;
-			data.WrapU  = wrapU;
-			data.WrapV  = wrapV;
-			data.Linear = linear;
+        public void Register(System.IDisposable tempData)
+        {
+            tempDatas.Add(tempData);
+        }
 
-			return data;
-		}
+        public static LeanPendingTexture Create(int2 size, TextureWrapMode wrapU, TextureWrapMode wrapV, bool linear)
+        {
+            var data = pool.Count > 0 ? pool.Pop() : new LeanPendingTexture();
 
-		/// <summary>This method will convert this pending texture into the final <b>Texture2D</b>, and then clean up & pool itself.
-		/// NOTE: After scheduling a texture to be generated, you must manually call this method within 3 frames.</summary>
-		public Texture2D Complete()
-		{
-			Handle.Complete();
+            data.Pixels = new NativeArray<float4>(size.x * size.y, Allocator.TempJob); data.Register(data.Pixels);
+            data.Size = size;
+            data.WrapU = wrapU;
+            data.WrapV = wrapV;
+            data.Linear = linear;
 
-			OutputTexture.Apply();
+            return data;
+        }
 
-			foreach (var tempData in tempDatas)
-			{
-				tempData.Dispose();
-			}
+        /// <summary>This method will convert this pending texture into the final <b>Texture2D</b>, and then clean up & pool itself.
+        /// NOTE: After scheduling a texture to be generated, you must manually call this method within 3 frames.</summary>
+        public Texture2D Complete()
+        {
+            Handle.Complete();
 
-			tempDatas.Clear();
+            OutputTexture.Apply();
 
-			Pixels     = default(NativeArray<float4>);
-			swapBuffer = default(NativeArray<float4>);
+            foreach (var tempData in tempDatas)
+            {
+                tempData.Dispose();
+            }
 
-			pool.Push(this);
+            tempDatas.Clear();
 
-			return OutputTexture;
-		}
+            Pixels = default(NativeArray<float4>);
+            swapBuffer = default(NativeArray<float4>);
 
-		private static Stack<LeanPendingTexture> pool = new Stack<LeanPendingTexture>();
-	}
+            pool.Push(this);
+
+            return OutputTexture;
+        }
+
+        private static Stack<LeanPendingTexture> pool = new Stack<LeanPendingTexture>();
+    }
 }

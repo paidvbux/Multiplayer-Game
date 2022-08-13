@@ -7,7 +7,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public static Dictionary<ushort, Player> room = new Dictionary<ushort, Player>();
-    public static Dictionary<ushort, Player> roomHost = new Dictionary<ushort, Player>(1);
+    public static Dictionary<ushort, Player> pregameRoom = new Dictionary<ushort, Player>();
 
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI playerIDText;
@@ -16,6 +16,19 @@ public class Player : MonoBehaviour
 
     private string username;
 
+    private void Start()
+    {
+        UpdatePlayers();
+    }
+
+    private void Update()
+    {
+        if (UIManager.Singleton.ingamePlayerList.Count >= 1 && isLocal && UIManager.Singleton.ingamePlayerList.IndexOf(this) == 0)
+        {
+            //Do host specific things
+        }
+    }
+
     private void OnDestroy()
     {
         room.Remove(id);
@@ -23,46 +36,83 @@ public class Player : MonoBehaviour
 
     public static void Spawn(ushort id, string username, Vector3 position)
     {
-        Player player;
+        Player ingamePlayer;
+        Player pregamePlayer;
         if (id == NetworkManager.Singleton.client.Id)
         {
-            player = Instantiate(GameLogic.Singleton.LocalPlayerPrefab, position, Quaternion.identity).GetComponent<Player>();
-            player.transform.SetParent(GameLogic.Singleton.PlayerParent);
-            player.transform.localScale = Vector3.one;
-            player.nameText.text = $"{(string.IsNullOrEmpty(username) ? "Guest" : username)} (You)";
-            player.isLocal = true;
+            //Instantiate local players in game screen
+            ingamePlayer = Instantiate(GameLogic.Singleton.LocalPlayerPrefab, position, Quaternion.identity).GetComponent<Player>();
+            ingamePlayer.transform.SetParent(GameLogic.Singleton.IngamePlayerParent);
+            ingamePlayer.transform.localScale = Vector3.one;
+            ingamePlayer.nameText.text = $"{(string.IsNullOrEmpty(username) ? "Guest" : username)} (You)";
+            ingamePlayer.isLocal = true;
+
+            //Instantiate local players in pregame screen
+            pregamePlayer = Instantiate(GameLogic.Singleton.LocalPlayerPrefab, position, Quaternion.identity).GetComponent<Player>();
+            pregamePlayer.transform.SetParent(GameLogic.Singleton.PregamePlayerParent);
+            pregamePlayer.transform.localScale = Vector3.one;
+            pregamePlayer.nameText.text = $"{(string.IsNullOrEmpty(username) ? "Guest" : username)} (You)";
+            pregamePlayer.isLocal = true;
         }
         else
         {
-            player = Instantiate(GameLogic.Singleton.PlayerPrefab, position, Quaternion.identity).GetComponent<Player>();
-            player.transform.SetParent(GameLogic.Singleton.PlayerParent);
-            player.transform.localScale = Vector3.one;
-            player.nameText.text = $"{(string.IsNullOrEmpty(username) ? "Guest" : username)}";
-            player.isLocal = false;
+            //Instantiate players in game screen
+            ingamePlayer = Instantiate(GameLogic.Singleton.PlayerPrefab, position, Quaternion.identity).GetComponent<Player>();
+            ingamePlayer.transform.SetParent(GameLogic.Singleton.IngamePlayerParent);
+            ingamePlayer.transform.localScale = Vector3.one;
+            ingamePlayer.nameText.text = $"{(string.IsNullOrEmpty(username) ? "Guest" : username)}";
+            ingamePlayer.isLocal = false;
+
+            //Instantiate local players in pregame screen
+            pregamePlayer = Instantiate(GameLogic.Singleton.PlayerPrefab, position, Quaternion.identity).GetComponent<Player>();
+            pregamePlayer.transform.SetParent(GameLogic.Singleton.PregamePlayerParent);
+            pregamePlayer.transform.localScale = Vector3.one;
+            pregamePlayer.nameText.text = $"{(string.IsNullOrEmpty(username) ? "Guest" : username)}";
+            pregamePlayer.isLocal = false;
         }
 
-        player.playerIDText.text = id.ToString();
-        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
-        player.id = id;
-        player.username = username;
+        ingamePlayer.playerIDText.text = id.ToString();
+        ingamePlayer.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
+        ingamePlayer.id = id;
+        ingamePlayer.username = username;
 
-        room.Add(id, player);
+        pregamePlayer.playerIDText.text = id.ToString();
+        pregamePlayer.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
+        pregamePlayer.id = id;
+        pregamePlayer.username = username;
+
+        room.Add(id, ingamePlayer);
+        pregameRoom.Add(id, pregamePlayer);
     }
 
     public static void UpdatePlayers()
     {
-        //int idOffset = 0;
-        //Dictionary<ushort, Player> newDict = room;
-        //for (int i = 0; i < room.Count; i++)
-        //{
-        //    Player player = room[newDict.Keys.Min()];
-        //    room.Remove(newDict.Keys.Min());
-        //    player.id = (ushort)(1 + idOffset);
-        //    player.playerIDText.text = player.id.ToString();
-        //    room.Add((ushort)(1 + idOffset), player);
-        //    idOffset++;
-        //}
-        //room = newDict;
+        UIManager.Singleton.ingamePlayerList.Clear();
+        UIManager.Singleton.pregamePlayerList.Clear();
+        foreach (KeyValuePair<ushort, Player> player in room)
+        {
+            UIManager.Singleton.ingamePlayerList.Add(player.Value);
+        }
+        foreach (KeyValuePair<ushort, Player> player in pregameRoom)
+        {
+            UIManager.Singleton.pregamePlayerList.Add(player.Value);
+        }
+        foreach (Player player in UIManager.Singleton.ingamePlayerList)
+        {
+            player.playerIDText.text = (UIManager.Singleton.ingamePlayerList.IndexOf(player) + 1).ToString();
+            if (UIManager.Singleton.ingamePlayerList.IndexOf(player) == 0 && !player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host)";
+            else if (!player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)}";
+            if (UIManager.Singleton.ingamePlayerList.IndexOf(player) == 0 && player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host, You)";
+            else if (player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (You)";
+        }
+        foreach (Player player in UIManager.Singleton.pregamePlayerList)
+        {
+            player.playerIDText.text = (UIManager.Singleton.pregamePlayerList.IndexOf(player) + 1).ToString();
+            if (UIManager.Singleton.pregamePlayerList.IndexOf(player) == 0 && !player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host)";
+            else if (!player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)}";
+            if (UIManager.Singleton.pregamePlayerList.IndexOf(player) == 0 && player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host, You)";
+            else if (player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (You)";
+        }
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]

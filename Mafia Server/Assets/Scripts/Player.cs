@@ -20,7 +20,6 @@ public class Player : MonoBehaviour
 
     public static void Spawn(ushort id, string username)
     {
-        id -= (ushort)NetworkManager.Singleton.clientsDisconnected;
         foreach (Player otherPlayer in list.Values)
             otherPlayer.SendSpawned(id);
 
@@ -31,6 +30,12 @@ public class Player : MonoBehaviour
     
         player.SendSpawned();
         list.Add(id, player);
+    }
+
+    public static void StartGame(ushort id, bool gameStarted)
+    {
+        foreach(Player player in list.Values)
+            player.SendGameStart(id);
     }
 
     #region Messages
@@ -44,6 +49,11 @@ public class Player : MonoBehaviour
         NetworkManager.Singleton.server.Send(AddSpawnData(Message.Create(MessageSendMode.reliable, ServerToClientId.playerSpawned)), toClientId);
     }
 
+    private void SendGameStart(ushort toClientId)
+    {
+        NetworkManager.Singleton.server.Send(Message.Create(MessageSendMode.reliable, ServerToClientId.gameStarted).AddBool(true), toClientId);
+    }
+
     private Message AddSpawnData(Message message)
     {
         message.AddUShort(id);
@@ -55,7 +65,13 @@ public class Player : MonoBehaviour
     [MessageHandler((ushort)ClientToServerId.name)]
     private static void Name(ushort fromClientId, Message message)
     {
-        Spawn((ushort)(fromClientId - (ushort)NetworkManager.Singleton.clientsDisconnected), message.GetString());
+        Spawn(fromClientId, message.GetString());
+    }
+
+    [MessageHandler((ushort)ClientToServerId.gameStarted)]
+    private static void GameStarted(ushort fromClientId, Message message)
+    {
+        StartGame(fromClientId, message.GetBool());
     }
     #endregion
 }

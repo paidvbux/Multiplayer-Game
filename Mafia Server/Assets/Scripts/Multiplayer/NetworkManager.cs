@@ -4,9 +4,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ServerToClientId : ushort { playerSpawned = 1 }
+public enum ServerToClientId : ushort 
+{ 
+    playerSpawned = 1,
+    gameStarted
+}
 
-public enum ClientToServerId : ushort { name = 1 }
+public enum ClientToServerId : ushort 
+{
+    name = 1,
+    gameStarted
+}
 public class NetworkManager : MonoBehaviour
 {
     private static NetworkManager _singleton;
@@ -24,8 +32,6 @@ public class NetworkManager : MonoBehaviour
             }
         }
     }
-
-    public int clientsDisconnected;
     public Server server { get; private set; }
 
     [SerializeField] private ushort port;
@@ -33,7 +39,6 @@ public class NetworkManager : MonoBehaviour
 
     void Awake()
     {
-        clientsDisconnected = 0;
         Singleton = this;
     }
 
@@ -61,6 +66,5 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         Destroy(Player.list[e.Id].gameObject);
-        clientsDisconnected++;
     }
 }

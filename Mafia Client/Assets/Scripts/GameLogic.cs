@@ -20,12 +20,14 @@ public class GameLogic : MonoBehaviour
 
     public GameObject LocalPlayerPrefab => localPlayerPrefab;
     public GameObject PlayerPrefab => playerPrefab;
-    public Transform PlayerParent => playerParent;
+    public Transform IngamePlayerParent => ingamePlayerParent;
+    public Transform PregamePlayerParent => pregamePlayerParent;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject localPlayerPrefab;
     [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private Transform playerParent;
+    [SerializeField] private Transform ingamePlayerParent;
+    [SerializeField] private Transform pregamePlayerParent;
 
     private void Awake()
     {

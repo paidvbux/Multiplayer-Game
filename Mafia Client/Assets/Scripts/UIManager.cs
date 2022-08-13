@@ -27,7 +27,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject failedconnectionUI;
     [SerializeField] private GameObject loadingUI;
     [SerializeField] private GameObject gameUI;
+    [SerializeField] private GameObject pregameUI;
     [SerializeField] private TMP_InputField usernameField;
+
+    [HideInInspector] public List<Player> ingamePlayerList;
+    [HideInInspector] public List<Player> pregamePlayerList;
 
     void Awake()
     {
@@ -61,7 +65,21 @@ public class UIManager : MonoBehaviour
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.name);
         message.AddString(usernameField.text);
         loadingUI.SetActive(false);
-        gameUI.SetActive(true);
+        pregameUI.SetActive(true);
         NetworkManager.Singleton.client.Send(message);
+    }
+
+    public void SendStartGame()
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.gameStarted);
+        message.AddBool(true);
+        StartGame();
+        NetworkManager.Singleton.client.Send(message);
+    }
+
+    private static void StartGame()
+    {
+        UIManager.Singleton.gameUI.SetActive(true);
+        UIManager.Singleton.pregameUI.SetActive(false);
     }
 }

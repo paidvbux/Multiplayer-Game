@@ -6,13 +6,15 @@ using UnityEngine;
 public enum ServerToClientId : ushort
 {
     playerSpawned = 1,
-    gameStarted
+    playerRole,
+    gameStarted,
 }
 
 public enum ClientToServerId : ushort
 {
     name = 1,
-    gameStarted
+    playerRole,
+    gameStarted,
 }
 
 public class NetworkManager : MonoBehaviour
@@ -82,7 +84,9 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         Destroy(Player.room[e.Id].gameObject);
+        Destroy(Player.pregameRoom[e.Id].gameObject);
         Player.room.Remove(e.Id);
+        Player.pregameRoom.Remove(e.Id);
         Player.UpdatePlayers();
     }
 
@@ -90,6 +94,7 @@ public class NetworkManager : MonoBehaviour
     {
         UIManager.Singleton.BackToMain();
         Player.room.Clear();
+        Player.pregameRoom.Clear();
         UIManager.Singleton.ingamePlayerList.Clear();
     }
 }

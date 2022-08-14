@@ -22,6 +22,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public GameObject GameUI => gameUI;
+    public GameObject PregameUI => pregameUI;
+    public GameObject StartButton => startButton;
+
     [Header("Connect")]
     [SerializeField] private GameObject connectUI;
     [SerializeField] private GameObject failedconnectionUI;
@@ -29,10 +33,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject gameUI;
     [SerializeField] private GameObject pregameUI;
     [SerializeField] private TMP_InputField usernameField;
+    [SerializeField] private GameObject startButton;
+
+    [Header("Player Card Settings")]
+    public TextMeshProUGUI nameText;
+    public TextMeshProUGUI descriptionText;
 
     [HideInInspector] public List<Player> ingamePlayerList;
     [HideInInspector] public List<Player> pregamePlayerList;
-
+    
     void Awake()
     {
         _singleton = this;
@@ -73,13 +82,6 @@ public class UIManager : MonoBehaviour
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.gameStarted);
         message.AddBool(true);
-        StartGame();
         NetworkManager.Singleton.client.Send(message);
-    }
-
-    private static void StartGame()
-    {
-        UIManager.Singleton.gameUI.SetActive(true);
-        UIManager.Singleton.pregameUI.SetActive(false);
     }
 }

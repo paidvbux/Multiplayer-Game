@@ -6,8 +6,20 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [System.Serializable]
+    public class Role
+    {
+        public string name;
+        public Sprite imageSprite;
+        public string description;
+        public int count;
+    }
+
     public static Dictionary<ushort, Player> room = new Dictionary<ushort, Player>();
     public static Dictionary<ushort, Player> pregameRoom = new Dictionary<ushort, Player>();
+
+    public static Player localIngamePlayer;
+    public static Player localPregamePlayer;
 
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI playerIDText;
@@ -16,6 +28,8 @@ public class Player : MonoBehaviour
 
     private string username;
 
+    public Role role;
+
     private void Start()
     {
         UpdatePlayers();
@@ -23,9 +37,13 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (UIManager.Singleton.ingamePlayerList.Count >= 1 && isLocal && UIManager.Singleton.ingamePlayerList.IndexOf(this) == 0)
+        if (UIManager.Singleton.ingamePlayerList.Count >= 1 && isLocal)
         {
             //Do host specific things
+            if (UIManager.Singleton.ingamePlayerList.IndexOf(this) == 0 || UIManager.Singleton.pregamePlayerList.IndexOf(this) == 0)
+                UIManager.Singleton.StartButton.SetActive(true);
+            else
+                UIManager.Singleton.StartButton.SetActive(false);
         }
     }
 
@@ -71,24 +89,30 @@ public class Player : MonoBehaviour
             pregamePlayer.isLocal = false;
         }
 
+        //Set all the UI stuff for the player in the game screen
         ingamePlayer.playerIDText.text = id.ToString();
         ingamePlayer.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
         ingamePlayer.id = id;
         ingamePlayer.username = username;
 
+        //Set all the UI stuff for the player in the pregame screen
         pregamePlayer.playerIDText.text = id.ToString();
         pregamePlayer.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
         pregamePlayer.id = id;
         pregamePlayer.username = username;
 
+        //Add players to the dictionaries for future reference
         room.Add(id, ingamePlayer);
         pregameRoom.Add(id, pregamePlayer);
     }
 
     public static void UpdatePlayers()
     {
+        //Clear lists to avoid conflicts and remove any empty players
         UIManager.Singleton.ingamePlayerList.Clear();
         UIManager.Singleton.pregamePlayerList.Clear();
+
+        //Recreate the lists
         foreach (KeyValuePair<ushort, Player> player in room)
         {
             UIManager.Singleton.ingamePlayerList.Add(player.Value);
@@ -97,21 +121,49 @@ public class Player : MonoBehaviour
         {
             UIManager.Singleton.pregamePlayerList.Add(player.Value);
         }
+        
+        //Sort lists
+        UIManager.Singleton.ingamePlayerList.Sort((p1, p2) => p1.id.CompareTo(p2.id));
+        UIManager.Singleton.pregamePlayerList.Sort((p1, p2) => p1.id.CompareTo(p2.id));
+
+        //Go through each player to update the UI
         foreach (Player player in UIManager.Singleton.ingamePlayerList)
         {
+            //Update the display ID for each player
             player.playerIDText.text = (UIManager.Singleton.ingamePlayerList.IndexOf(player) + 1).ToString();
+            
+            //Update the name to show who is the current host
             if (UIManager.Singleton.ingamePlayerList.IndexOf(player) == 0 && !player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host)";
             else if (!player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)}";
             if (UIManager.Singleton.ingamePlayerList.IndexOf(player) == 0 && player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host, You)";
             else if (player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (You)";
         }
+
         foreach (Player player in UIManager.Singleton.pregamePlayerList)
         {
+            //Update the display ID for each player
             player.playerIDText.text = (UIManager.Singleton.pregamePlayerList.IndexOf(player) + 1).ToString();
+            
+            //Update the name to show who is the current host
             if (UIManager.Singleton.pregamePlayerList.IndexOf(player) == 0 && !player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host)";
             else if (!player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)}";
             if (UIManager.Singleton.pregamePlayerList.IndexOf(player) == 0 && player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (Host, You)";
             else if (player.isLocal) player.nameText.text = $"{(string.IsNullOrEmpty(player.username) ? "Guest" : player.username)} (You)";
+        }
+
+        UpdateLocalPlayers();
+    }
+
+    public static void UpdateLocalPlayers()
+    {
+        if (localIngamePlayer != null)
+        {
+            foreach (Player player in UIManager.Singleton.ingamePlayerList) { if (player.isLocal) { localIngamePlayer = player; break; } }
+        }
+
+        if (localPregamePlayer != null)
+        {
+            foreach (Player player in UIManager.Singleton.pregamePlayerList) { if (player.isLocal) { localPregamePlayer = player; break; } }
         }
     }
 
@@ -119,5 +171,12 @@ public class Player : MonoBehaviour
     private static void SpawnPlayer(Message message)
     {
         Spawn(message.GetUShort(), message.GetString(), message.GetVector3());
+    }
+
+    [MessageHandler((ushort)ServerToClientId.gameStarted)]
+    private static void StartGame(Message message)
+    {
+        UIManager.Singleton.GameUI.SetActive(true);
+        UIManager.Singleton.PregameUI.SetActive(false);
     }
 }

@@ -13,6 +13,16 @@ public class Player : MonoBehaviour
     public ushort id { get; private set; }
     public string username { get; private set; }
 
+    [System.Serializable]
+    public class Role
+    {
+        public string name;
+        public string description;
+        public int count;
+    }
+
+    public Role[] roles;
+
     private void OnDestroy()
     {
         list.Remove(id);

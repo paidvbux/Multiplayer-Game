@@ -2,10 +2,13 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class ConnectingText : MonoBehaviour
+public class LoadingText : MonoBehaviour
 {
     [SerializeField] float interval;
     [SerializeField] int maxDotCount;
+
+    public string text;
+
     public int currentDotCount;
     TextMeshProUGUI textComponent => GetComponent<TextMeshProUGUI>();
     void Start()
@@ -15,7 +18,7 @@ public class ConnectingText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        textComponent.text = "Connecting" + new string('.', currentDotCount);
+        textComponent.text = text + new string('.', currentDotCount);
     }
 
     IEnumerator UpdateText()

@@ -38,6 +38,8 @@ public class GameLogic : MonoBehaviour
 
     public bool healingSelected;
     public bool poisonSelected;
+    public bool hasHealing;
+    public bool hasPoison;
 
     private void Awake()
     {
@@ -84,19 +86,7 @@ public class GameLogic : MonoBehaviour
         {
             case "Detective":
                 currentTurn = "";
-                bool isBad = false;
-                switch (selectedPlayer.role.name)
-                {
-                    case "Werewolf":
-                        isBad = true;
-                        break;
-                    case "Werewolf King": 
-                        isBad = true; 
-                        break;
-                    default: 
-                        isBad = false;
-                        break;
-                }
+                bool isBad = selectedPlayer.role.isBad;
                 Debug.Log(isBad);
                 break;
             case "Witch":
@@ -112,6 +102,7 @@ public class GameLogic : MonoBehaviour
     private void WaitForNightEnd()
     {
         UIManager.Singleton.asleepUI.SetActive(true);
+        UIManager.Singleton.endTurnButton.SetActive(false);
         while (isNight);
         UIManager.Singleton.asleepUI.SetActive(false);
     }
@@ -119,11 +110,14 @@ public class GameLogic : MonoBehaviour
     private void WaitForDetective()
     {
         UIManager.Singleton.asleepUI.SetActive(true);
+        UIManager.Singleton.endTurnButton.SetActive(false);
         while (currentTurn != "Detective") ;
         UIManager.Singleton.asleepUI.SetActive(false);
+        UIManager.Singleton.endTurnButton.SetActive(true);
         while (currentTurn == "Detective") ;
         currentTurn = "";
         isNight = false;
+        UIManager.Singleton.endTurnButton.SetActive(false);
         WaitForNightEnd();
     }
 
@@ -132,11 +126,10 @@ public class GameLogic : MonoBehaviour
         UIManager.Singleton.asleepUI.SetActive(true);
         while (currentTurn != "Witch") ;
         UIManager.Singleton.asleepUI.SetActive(false);
-        while (currentTurn == "Witch")
-        {
-            //Do witch stuff
-        }
+        UIManager.Singleton.endTurnButton.SetActive(true);
+        while (currentTurn == "Witch") ;
         currentTurn = "Detective";
+        UIManager.Singleton.endTurnButton.SetActive(false);
         WaitForNightEnd();
     }
 
@@ -145,10 +138,9 @@ public class GameLogic : MonoBehaviour
         UIManager.Singleton.asleepUI.SetActive(true);
         while (currentTurn != "Werewolf") ;
         UIManager.Singleton.asleepUI.SetActive(false);
-        while (currentTurn == "Werewolf")
-        {
-            //Do werewolf stuff
-        }
+        UIManager.Singleton.endTurnButton.SetActive(true);
+        while (currentTurn == "Werewolf") ;
+        UIManager.Singleton.endTurnButton.SetActive(false);
         currentTurn = "Witch";
         WaitForNightEnd();
     }

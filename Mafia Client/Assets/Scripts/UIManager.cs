@@ -44,6 +44,7 @@ public class UIManager : MonoBehaviour
     [Header("Ingame UI")]
     public GameObject asleepUI;
     public GameObject selectionUI;
+    public GameObject endTurnButton;
 
     [Header("Other")]
     public List<Player> ingamePlayerList;

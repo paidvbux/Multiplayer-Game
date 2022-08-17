@@ -6,20 +6,13 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [System.Serializable]
-    public class Role
-    {
-        public string name;
-        public Sprite imageSprite;
-        public string description;
-        public int count;
-    }
-
     public static Dictionary<ushort, Player> room = new Dictionary<ushort, Player>();
     public static Dictionary<ushort, Player> pregameRoom = new Dictionary<ushort, Player>();
 
     public static Player localIngamePlayer;
     public static Player localPregamePlayer;
+
+    public GameObject asleepUI;
 
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI playerIDText;
@@ -28,6 +21,7 @@ public class Player : MonoBehaviour
 
     private string username;
 
+    public int roleId;
     public Role role;
 
     private void Start()
@@ -50,6 +44,15 @@ public class Player : MonoBehaviour
     private void OnDestroy()
     {
         room.Remove(id);
+    }
+
+    public static void SetRole(ushort id, int _roleId)
+    {
+        room[id].role = GameLogic.Singleton.roles[_roleId];
+        pregameRoom[id].role = GameLogic.Singleton.roles[_roleId];
+
+        room[id].roleId = _roleId;
+        pregameRoom[id].roleId = _roleId;
     }
 
     public static void Spawn(ushort id, string username, Vector3 position)
@@ -153,7 +156,6 @@ public class Player : MonoBehaviour
 
         UpdateLocalPlayers();
     }
-
     public static void UpdateLocalPlayers()
     {
         if (localIngamePlayer != null)
@@ -165,6 +167,13 @@ public class Player : MonoBehaviour
         {
             foreach (Player player in UIManager.Singleton.pregamePlayerList) { if (player.isLocal) { localPregamePlayer = player; break; } }
         }
+    }
+
+    public static void SelectPlayer(Player player)
+    {
+        GameLogic.Singleton.selectedPlayer = player;
+        UIManager.Singleton.selectionUI.SetActive(true);
+        UIManager.Singleton.selectionUI.transform.position = player.transform.position;
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
@@ -179,4 +188,10 @@ public class Player : MonoBehaviour
         UIManager.Singleton.GameUI.SetActive(true);
         UIManager.Singleton.PregameUI.SetActive(false);
     }
+
+    [MessageHandler((ushort)ServerToClientId.playerRole)]
+    private static void GetRole(Message message)
+    {
+        SetRole(message.GetUShort(), message.GetInt());
+    }    
 }

@@ -27,6 +27,8 @@ public class UIManager : MonoBehaviour
     public GameObject StartButton => startButton;
 
     [Header("Connect")]
+    [SerializeField] private GameObject canvas;
+    [SerializeField] private GameObject startScreen;
     [SerializeField] private GameObject connectUI;
     [SerializeField] private GameObject failedconnectionUI;
     [SerializeField] private GameObject loadingUI;
@@ -39,8 +41,13 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI descriptionText;
 
-    [HideInInspector] public List<Player> ingamePlayerList;
-    [HideInInspector] public List<Player> pregamePlayerList;
+    [Header("Ingame UI")]
+    public GameObject asleepUI;
+    public GameObject selectionUI;
+
+    [Header("Other")]
+    public List<Player> ingamePlayerList;
+    public List<Player> pregamePlayerList;
     
     void Awake()
     {

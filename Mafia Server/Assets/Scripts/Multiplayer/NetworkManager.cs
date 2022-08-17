@@ -7,13 +7,15 @@ using UnityEngine;
 public enum ServerToClientId : ushort 
 { 
     playerSpawned = 1,
-    gameStarted
+    playerRole,
+    gameStarted,
 }
 
 public enum ClientToServerId : ushort 
 {
     name = 1,
-    gameStarted
+    playerRole,
+    gameStarted,
 }
 public class NetworkManager : MonoBehaviour
 {

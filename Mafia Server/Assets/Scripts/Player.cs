@@ -13,15 +13,9 @@ public class Player : MonoBehaviour
     public ushort id { get; private set; }
     public string username { get; private set; }
 
-    [System.Serializable]
-    public class Role
-    {
-        public string name;
-        public string description;
-        public int count;
-    }
+    public int roleId;
 
-    public Role[] roles;
+    public static List<int> rolesAvailable;
 
     private void OnDestroy()
     {
@@ -42,10 +36,21 @@ public class Player : MonoBehaviour
         list.Add(id, player);
     }
 
+    public static void AddRole(ushort id, int _roleId)
+    {
+        list[id].roleId = _roleId;
+        foreach (Player otherPlayer in list.Values)
+            otherPlayer.SendRole(id);
+
+        list[id].SendRole();
+    }
+
     public static void StartGame(ushort id, bool gameStarted)
     {
-        foreach(Player player in list.Values)
+        foreach (Player player in list.Values)
             player.SendGameStart(id);
+
+        list[id].SendGameStart();
     }
 
     #region Messages
@@ -59,9 +64,23 @@ public class Player : MonoBehaviour
         NetworkManager.Singleton.server.Send(AddSpawnData(Message.Create(MessageSendMode.reliable, ServerToClientId.playerSpawned)), toClientId);
     }
 
+    private void SendGameStart()
+    {
+        NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.gameStarted).AddBool(true));
+    }
+
     private void SendGameStart(ushort toClientId)
     {
         NetworkManager.Singleton.server.Send(Message.Create(MessageSendMode.reliable, ServerToClientId.gameStarted).AddBool(true), toClientId);
+    }
+    private void SendRole()
+    {
+        NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.playerRole).AddUShort(id).AddInt(roleId));
+    }
+    
+    private void SendRole(ushort toClientId)
+    {
+        NetworkManager.Singleton.server.Send(Message.Create(MessageSendMode.reliable, ServerToClientId.playerRole).AddUShort(id).AddInt(roleId), toClientId);
     }
 
     private Message AddSpawnData(Message message)
@@ -82,6 +101,14 @@ public class Player : MonoBehaviour
     private static void GameStarted(ushort fromClientId, Message message)
     {
         StartGame(fromClientId, message.GetBool());
+        rolesAvailable = new List<int>(0);
+        for (int i = 0; i < NetworkManager.Singleton.server.ClientCount; i++) rolesAvailable.Add(i);
+        foreach (ushort ids in list.Keys)
+        {
+            int _roleId = rolesAvailable[Random.Range(0, rolesAvailable.Count - 1)];
+            rolesAvailable.Remove(_roleId);
+            AddRole(ids, _roleId);
+        }
     }
     #endregion
 }

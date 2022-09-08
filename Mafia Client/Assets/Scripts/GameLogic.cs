@@ -79,6 +79,7 @@ public class GameLogic : MonoBehaviour
                     break;
             }
         }
+        Debug.Log(currentTurn);
     }
 
     public Player WaitForSelection()
@@ -123,7 +124,7 @@ public class GameLogic : MonoBehaviour
     {
         UIManager.Singleton.asleepUI.SetActive(true);
         UIManager.Singleton.endTurnButton.SetActive(false);
-        while (currentTurn != "Detective") ;
+        while (currentTurn != "Detective" && currentTurn != "") ;
         UIManager.Singleton.asleepUI.SetActive(false);
         UIManager.Singleton.endTurnButton.SetActive(true);
         Debug.Log(WaitForSelection() ? "Bad" : "Good");
@@ -138,7 +139,7 @@ public class GameLogic : MonoBehaviour
     private void WaitForWitch()
     {
         UIManager.Singleton.asleepUI.SetActive(true);
-        while (currentTurn != "Witch") ;
+        while (currentTurn != "Witch" && currentTurn != "") ;
         UIManager.Singleton.asleepUI.SetActive(false);
         UIManager.Singleton.endTurnButton.SetActive(true);
         Debug.Log(WaitForSelection());
@@ -150,7 +151,7 @@ public class GameLogic : MonoBehaviour
     private void WaitForWerewolf()
     {
         UIManager.Singleton.asleepUI.SetActive(true);
-        while (currentTurn != "Werewolf") ;
+        while (currentTurn != "Werewolf" && currentTurn != "") ;
         UIManager.Singleton.asleepUI.SetActive(false);
         UIManager.Singleton.endTurnButton.SetActive(true);
         Debug.Log(WaitForSelection()) ;

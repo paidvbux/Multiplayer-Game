@@ -176,7 +176,7 @@ public class Player : MonoBehaviour
 
     public void SelectPlayer()
     {
-        GameLogic.Singleton.selectedPlayer = this;
+        if (!isLocal) GameLogic.Singleton.selectedPlayer = this;
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]

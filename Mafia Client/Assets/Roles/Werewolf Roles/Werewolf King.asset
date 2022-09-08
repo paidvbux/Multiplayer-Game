@@ -15,3 +15,4 @@ MonoBehaviour:
   name: Werewolf King
   displayImage: {fileID: 0}
   description: 
+  isBad: 1

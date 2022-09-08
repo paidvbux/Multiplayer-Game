@@ -389,7 +389,6 @@ MonoBehaviour:
   nameText: {fileID: 0}
   descriptionText: {fileID: 0}
   asleepUI: {fileID: 0}
-  selectionUI: {fileID: 0}
   endTurnButton: {fileID: 0}
   ingamePlayerList: []
   pregamePlayerList: []
@@ -36750,7 +36749,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &848036985
 RectTransform:
   m_ObjectHideFlags: 0
@@ -38805,21 +38804,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   roles:
-  - {fileID: 11400000, guid: a061f2f4a339ba84b88525bac448560a, type: 2}
-  - {fileID: 11400000, guid: a061f2f4a339ba84b88525bac448560a, type: 2}
-  - {fileID: 11400000, guid: a061f2f4a339ba84b88525bac448560a, type: 2}
-  - {fileID: 11400000, guid: 3e59505d1f5213e4a84ae593673c1b85, type: 2}
-  - {fileID: 11400000, guid: 7d45b8e8b7fe8a04bb55052a0ca73503, type: 2}
-  - {fileID: 11400000, guid: 78e950f75b26e5b45ae290713d7eae31, type: 2}
-  - {fileID: 11400000, guid: 3defbb424c05a13408322e1d2c67cebd, type: 2}
   - {fileID: 11400000, guid: 38040e38e54cac741a9367406f8c1f9a, type: 2}
   - {fileID: 11400000, guid: 38040e38e54cac741a9367406f8c1f9a, type: 2}
-  - {fileID: 11400000, guid: 9ef4e8c990260c244a7c817ff90ff198, type: 2}
   localPlayerPrefab: {fileID: 789103876259916279, guid: 7d601a4524e705748b0a801797f4a1eb, type: 3}
   playerPrefab: {fileID: 2542157771531547748, guid: 53db7a1565c41674cb0124b2c28b850a, type: 3}
   ingamePlayerParent: {fileID: 186829580}
   pregamePlayerParent: {fileID: 1958084860}
+  isNight: 0
+  currentTurn: 
   selectedPlayer: {fileID: 0}
+  playerSelected: 0
   healingSelected: 0
   poisonSelected: 0
   hasHealing: 0
@@ -38959,7 +38953,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1608189253
 RectTransform:
   m_ObjectHideFlags: 0

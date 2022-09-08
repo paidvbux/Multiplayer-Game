@@ -31,10 +31,11 @@ public class GameLogic : MonoBehaviour
     [SerializeField] private Transform ingamePlayerParent;
     [SerializeField] private Transform pregamePlayerParent;
 
-    bool isNight;
-    string currentTurn;
+    public bool isNight;
+    public string currentTurn;
 
     public Player selectedPlayer;
+    public bool playerSelected;
 
     public bool healingSelected;
     public bool poisonSelected;
@@ -80,6 +81,17 @@ public class GameLogic : MonoBehaviour
         }
     }
 
+    public Player WaitForSelection()
+    {
+        while (!playerSelected) ;
+        return selectedPlayer;
+    }
+
+    public void ConfirmSelection()
+    {
+        playerSelected = true;
+    }
+
     public void EndTurn()
     {
         switch (currentTurn)
@@ -114,7 +126,9 @@ public class GameLogic : MonoBehaviour
         while (currentTurn != "Detective") ;
         UIManager.Singleton.asleepUI.SetActive(false);
         UIManager.Singleton.endTurnButton.SetActive(true);
-        while (currentTurn == "Detective") ;
+        Debug.Log(WaitForSelection() ? "Bad" : "Good");
+        selectedPlayer = null;
+        playerSelected = false;
         currentTurn = "";
         isNight = false;
         UIManager.Singleton.endTurnButton.SetActive(false);
@@ -127,7 +141,7 @@ public class GameLogic : MonoBehaviour
         while (currentTurn != "Witch") ;
         UIManager.Singleton.asleepUI.SetActive(false);
         UIManager.Singleton.endTurnButton.SetActive(true);
-        while (currentTurn == "Witch") ;
+        Debug.Log(WaitForSelection());
         currentTurn = "Detective";
         UIManager.Singleton.endTurnButton.SetActive(false);
         WaitForNightEnd();
@@ -139,7 +153,7 @@ public class GameLogic : MonoBehaviour
         while (currentTurn != "Werewolf") ;
         UIManager.Singleton.asleepUI.SetActive(false);
         UIManager.Singleton.endTurnButton.SetActive(true);
-        while (currentTurn == "Werewolf") ;
+        Debug.Log(WaitForSelection()) ;
         UIManager.Singleton.endTurnButton.SetActive(false);
         currentTurn = "Witch";
         WaitForNightEnd();

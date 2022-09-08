@@ -24,6 +24,8 @@ public class Player : MonoBehaviour
     public int roleId;
     public Role role;
 
+    public GameObject selectionObject;
+
     private void Start()
     {
         UpdatePlayers();
@@ -31,6 +33,9 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        if (GameLogic.Singleton.selectedPlayer == this) selectionObject.SetActive(true);
+        else selectionObject.SetActive(false);
+
         if (UIManager.Singleton.ingamePlayerList.Count >= 1 && isLocal)
         {
             //Do host specific things
@@ -169,11 +174,9 @@ public class Player : MonoBehaviour
         }
     }
 
-    public static void SelectPlayer(Player player)
+    public void SelectPlayer()
     {
-        GameLogic.Singleton.selectedPlayer = player;
-        UIManager.Singleton.selectionUI.SetActive(true);
-        UIManager.Singleton.selectionUI.transform.position = player.transform.position;
+        GameLogic.Singleton.selectedPlayer = this;
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
@@ -187,6 +190,7 @@ public class Player : MonoBehaviour
     {
         UIManager.Singleton.GameUI.SetActive(true);
         UIManager.Singleton.PregameUI.SetActive(false);
+        GameLogic.Singleton.currentTurn = "Werewolf";
     }
 
     [MessageHandler((ushort)ServerToClientId.playerRole)]

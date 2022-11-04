@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b1af4dd1a1e2f4ca3675105dba0d96, type: 3}
   m_Name: Detective
   m_EditorClassIdentifier: 
-  name: Detective
-  displayImage: {fileID: 0}
-  description: 
+  roleName: Detective
+  displayImage: {fileID: 21300000, guid: cad2e25cd8ac98543a3474d5d8d37c84, type: 3}
+  description: Every night, you may choose to see another player's role.
+  isBad: 0
+  type: 1
+  selectionType: 3

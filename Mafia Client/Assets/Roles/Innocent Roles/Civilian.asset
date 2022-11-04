@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b1af4dd1a1e2f4ca3675105dba0d96, type: 3}
   m_Name: Civilian
   m_EditorClassIdentifier: 
-  name: Civilian
-  displayImage: {fileID: 0}
-  description: 
+  roleName: Civilian
+  displayImage: {fileID: 21300000, guid: 17933171afa6a5b43ab6d59b8c3fa982, type: 3}
+  description: A useless character all they can do is accuse and vote.
+  isBad: 0
+  type: 2
+  selectionType: 0

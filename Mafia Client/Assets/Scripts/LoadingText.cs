@@ -2,6 +2,9 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Creates a visual change which allows the a string to cycle between a number of dots
+/// </summary>
 public class LoadingText : MonoBehaviour
 {
     [SerializeField] float interval;

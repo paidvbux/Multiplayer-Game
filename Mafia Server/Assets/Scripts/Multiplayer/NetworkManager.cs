@@ -4,18 +4,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ServerToClientId : ushort 
+public enum ServerToClientId : ushort //Creates enums that allow the server to communicate to the client
 { 
     playerSpawned = 1,
     playerRole,
     gameStarted,
+    selectedPlayer,
+    endNight,
+    message,
 }
 
-public enum ClientToServerId : ushort 
+public enum ClientToServerId : ushort //Creates enums that allow the server to communicate to the client
 {
     name = 1,
     playerRole,
     gameStarted,
+    selectedPlayer,
+    endNight,
+    message,
 }
 public class NetworkManager : MonoBehaviour
 {

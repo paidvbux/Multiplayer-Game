@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b1af4dd1a1e2f4ca3675105dba0d96, type: 3}
   m_Name: Knight
   m_EditorClassIdentifier: 
-  name: Knight
-  displayImage: {fileID: 0}
-  description: 
+  roleName: Knight
+  displayImage: {fileID: 21300000, guid: 4140c291bd9a7eb45a76728c71fbf3aa, type: 3}
+  description: Once per game, you may choose a person to hit, if that person is a
+    wolf/bad then they die, else you die.
+  isBad: 0
+  type: 1
+  selectionType: 5

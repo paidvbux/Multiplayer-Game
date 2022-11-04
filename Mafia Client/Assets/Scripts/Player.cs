@@ -4,28 +4,30 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
+//MoMoney is cool 
+
 public class Player : MonoBehaviour
 {
-    public static Dictionary<ushort, Player> room = new Dictionary<ushort, Player>();
-    public static Dictionary<ushort, Player> pregameRoom = new Dictionary<ushort, Player>();
+    public static Dictionary<ushort, Player> room = new Dictionary<ushort, Player>(); //Holds the list of players in the game room
+    public static Dictionary<ushort, Player> pregameRoom = new Dictionary<ushort, Player>(); //Holds the list of players in the pregame room
 
-    public static Player localIngamePlayer;
-    public static Player localPregamePlayer;
+    //Used for easier access
+    public static Player localIngamePlayer; //Holds the local player in game
+    public static Player localPregamePlayer; //Holds the local player in pregame
 
-    public GameObject asleepUI;
+    public TextMeshProUGUI nameText; //Holds the variable which holds the text to hold the name
+    public TextMeshProUGUI playerIDText; //Holds the variable which holds the text to hold the id of the player
+    public ushort id { get; private set; } //Holds the id of the player
+    public bool isLocal { get; private set; } //Holds if the player is local to the computer
 
-    public TextMeshProUGUI nameText;
-    public TextMeshProUGUI playerIDText;
-    public ushort id { get; private set; }
-    public bool isLocal { get; private set; }
+    public string username; //Holds the name of the player
 
-    private string username;
+    public int roleId; //Holds the id of the role
+    public Role role; //Holds the role of the player
 
-    public int roleId;
-    public Role role;
+    public GameObject selectionObject; //Holds the image that shows that the player is selected
 
-    public GameObject selectionObject;
-
+    [HideInInspector] public bool turnEnded; //Holds if the player's turn has ended
     private void Start()
     {
         UpdatePlayers();
@@ -33,9 +35,11 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        //Turns on the selection overlay on the player if the player is selected
         if (GameLogic.Singleton.selectedPlayer == this) selectionObject.SetActive(true);
         else selectionObject.SetActive(false);
 
+        //Check if there is a room or not and do host specific things
         if (UIManager.Singleton.ingamePlayerList.Count >= 1 && isLocal)
         {
             //Do host specific things
@@ -48,7 +52,9 @@ public class Player : MonoBehaviour
 
     private void OnDestroy()
     {
+        //Remove itself from the room after it gets destroyed
         room.Remove(id);
+        pregameRoom.Remove(id);
     }
 
     public static void SetRole(ushort id, int _roleId)
@@ -58,7 +64,7 @@ public class Player : MonoBehaviour
 
         room[id].roleId = _roleId;
         pregameRoom[id].roleId = _roleId;
-    }
+    } //Sets the role of the player
 
     public static void Spawn(ushort id, string username, Vector3 position)
     {
@@ -112,7 +118,7 @@ public class Player : MonoBehaviour
         //Add players to the dictionaries for future reference
         room.Add(id, ingamePlayer);
         pregameRoom.Add(id, pregamePlayer);
-    }
+    } //Spawns the player
 
     public static void UpdatePlayers()
     {
@@ -160,42 +166,66 @@ public class Player : MonoBehaviour
         }
 
         UpdateLocalPlayers();
-    }
+    } //Update the players so that the game does not break
     public static void UpdateLocalPlayers()
     {
-        if (localIngamePlayer != null)
-        {
-            foreach (Player player in UIManager.Singleton.ingamePlayerList) { if (player.isLocal) { localIngamePlayer = player; break; } }
-        }
-
-        if (localPregamePlayer != null)
-        {
-            foreach (Player player in UIManager.Singleton.pregamePlayerList) { if (player.isLocal) { localPregamePlayer = player; break; } }
-        }
-    }
+        foreach (Player player in UIManager.Singleton.ingamePlayerList) { if (player.isLocal) { localIngamePlayer = player; break; } }
+        foreach (Player player in UIManager.Singleton.pregamePlayerList) { if (player.isLocal) { localPregamePlayer = player; break; } }
+    } //Update the players so that the game does not break
 
     public void SelectPlayer()
     {
+        if (GameLogic.Singleton.currentTurn == "Werewolf")
+        {
+            ActiveSelect();
+            return;
+        }
         if (!isLocal) GameLogic.Singleton.selectedPlayer = this;
+    } //Select the player
+
+    public void ActiveSelect()
+    {
+
+    } //Select
+
+    [MessageHandler((ushort)ServerToClientId.message)]
+    public static void AddMessage(Message message) //Adds the message to the chat message array
+    {
+        string[] storedStrings = message.GetStrings(); //Creates a string array to hold the username of the sender and the message sent
+        Player selectedPlayer = null; //Creates a temp player reference for later use
+        foreach (Player player in room.Values) //Checks to see which player sent the message
+        {
+            if (player.username == storedStrings[0])
+            {
+                selectedPlayer = player; //Sets the temp player to the reference
+                break;
+            }
+        }
+        ChatScript.Message.Types type = ChatScript.Message.Types.normal; //Adds the type of message which changes the color of the text
+        if (selectedPlayer.isLocal) type = ChatScript.Message.Types.local; //Changes the type to local which highlights it in yellow
+        else if (GameLogic.Singleton.gameStarted && selectedPlayer.role.isBad && localIngamePlayer.role.isBad) type = ChatScript.Message.Types.wolf; //Changes the type to be wolf which highlights it in red
+        ChatScript.Singleton.messages.Add(new ChatScript.Message(storedStrings[0], storedStrings[1], type)); //Appends and creates the message
+        ChatScript.Singleton.UpdateMessages(); //Update the messages
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
-    private static void SpawnPlayer(Message message)
+    private static void SpawnPlayer(Message message) //Receives the id, name and position and spawns the player
     {
         Spawn(message.GetUShort(), message.GetString(), message.GetVector3());
     }
 
     [MessageHandler((ushort)ServerToClientId.gameStarted)]
-    private static void StartGame(Message message)
+    private static void StartGame(Message message) //Receives the start of the game
     {
         UIManager.Singleton.GameUI.SetActive(true);
         UIManager.Singleton.PregameUI.SetActive(false);
         GameLogic.Singleton.currentTurn = "Werewolf";
+        GameLogic.Singleton.isNight = true;
     }
 
     [MessageHandler((ushort)ServerToClientId.playerRole)]
-    private static void GetRole(Message message)
+    private static void GetRole(Message message) //Receives the role defined by the server
     {
         SetRole(message.GetUShort(), message.GetInt());
-    }    
+    }
 }

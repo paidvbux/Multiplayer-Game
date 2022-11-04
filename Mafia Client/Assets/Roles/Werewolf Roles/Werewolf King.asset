@@ -12,7 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b1af4dd1a1e2f4ca3675105dba0d96, type: 3}
   m_Name: Werewolf King
   m_EditorClassIdentifier: 
-  name: Werewolf King
-  displayImage: {fileID: 0}
-  description: 
+  roleName: 
+  displayImage: {fileID: 21300000, guid: d181826cda34d3745b28a1b466da7d6a, type: 3}
+  description: 'You can see all other wolves. You are a wolf, you can vote to kill
+    one person per night, you can also choose to kill your fellow wolves. Kill off
+    either all the civillians or all the scholars (special people) to win.
+
+    When
+    you die, you may take someone with you. '
   isBad: 1
+  type: 0
+  selectionType: 1

@@ -3,18 +3,24 @@ using RiptideNetworking.Utils;
 using System;
 using UnityEngine;
 
-public enum ServerToClientId : ushort
+public enum ServerToClientId : ushort //Creates enums that allow the server to communicate to the client
 {
     playerSpawned = 1,
     playerRole,
     gameStarted,
+    selectedPlayer,
+    endNight,
+    message,
 }
 
-public enum ClientToServerId : ushort
+public enum ClientToServerId : ushort //Creates enums that allow the server to communicate to the client
 {
     name = 1,
     playerRole,
     gameStarted,
+    selectedPlayer,
+    endNight,
+    message,
 }
 
 public class NetworkManager : MonoBehaviour
@@ -93,8 +99,12 @@ public class NetworkManager : MonoBehaviour
     private void DidDisconnect(object sender, EventArgs e)
     {
         UIManager.Singleton.BackToMain();
+        foreach (Player player in Player.room.Values) Destroy(player.gameObject);
+        foreach (Player player in Player.pregameRoom.Values) Destroy(player.gameObject);
         Player.room.Clear();
         Player.pregameRoom.Clear();
+        Player.localIngamePlayer = null;
+        Player.localPregamePlayer = null;
         UIManager.Singleton.ingamePlayerList.Clear();
     }
 }

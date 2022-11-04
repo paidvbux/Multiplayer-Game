@@ -1,3 +1,4 @@
+using RiptideNetworking;
 using UnityEngine;
 
 public class GameLogic : MonoBehaviour
@@ -25,6 +26,8 @@ public class GameLogic : MonoBehaviour
     public Transform IngamePlayerParent => ingamePlayerParent;
     public Transform PregamePlayerParent => pregamePlayerParent;
 
+    public CanvasGroup canvasGroup;
+
     [Header("Prefabs")]
     [SerializeField] private GameObject localPlayerPrefab;
     [SerializeField] private GameObject playerPrefab;
@@ -41,50 +44,61 @@ public class GameLogic : MonoBehaviour
     public bool poisonSelected;
     public bool hasHealing;
     public bool hasPoison;
+    public bool gameStarted;
 
     private void Awake()
     {
         Singleton = this;
     }
 
-    private void Update()
+    void Update()
     {
-        if (Player.localIngamePlayer != null)
+        if (Player.localIngamePlayer != null) //Checks if there is a player in game
         {
-            switch (Player.localIngamePlayer.role.name)
+            if (Player.localIngamePlayer.role != null && UIManager.Singleton.playerImage.sprite != Player.localIngamePlayer.role.displayImage) //Changes the image of the role
             {
-                //Innocent Roles
-                case "Civilian":
-                    WaitForNightEnd();
-                    break;
-                case "Detective":
-                    WaitForDetective();
-                    break;
-                case "Witch":
-                    WaitForWitch();
-                    break;
-                case "Knight":
-                    WaitForNightEnd();
-                    break;
-                case "Hunter":
-                    WaitForNightEnd();
-                    break;
+                foreach (Player player in Player.room.Values)
+                {
+                    if (player.isLocal) UIManager.Singleton.playerImage.sprite = player.role.displayImage;
+                }
+            }
+            if (isNight) //Checks if the game is in nighttime
+            {
+                if (Player.localIngamePlayer.role == null) return; //Exits if it tries to run without a player
+                switch (Player.localIngamePlayer.role.roleName)
+                {
+                    //Innocent Roles
+                    case "Civilian":
+                        WaitForNightEnd();
+                        break;
+                    case "Detective":
+                        WaitForDetective();
+                        break;
+                    case "Witch":
+                        WaitForWitch();
+                        break;
+                    case "Knight":
+                        WaitForNightEnd();
+                        break;
+                    case "Hunter":
+                        WaitForNightEnd();
+                        break;
 
-                //Werewolf Roles
-                case "Werewolf":
-                    WaitForWerewolf();
-                    break;
-                case "Werewolf King":
-                    WaitForWerewolf();
-                    break;
+                    //Werewolf Roles
+                    case "Werewolf":
+                        WaitForWerewolf();
+                        break;
+                    case "Werewolf King":
+                        WaitForWerewolf();
+                        break;
+                }
             }
         }
-        Debug.Log(currentTurn);
     }
 
-    public Player WaitForSelection()
+    public Player WaitForSelection() //Check for selection
     {
-        while (!playerSelected) ;
+        if (!playerSelected) return null;
         return selectedPlayer;
     }
 
@@ -110,53 +124,76 @@ public class GameLogic : MonoBehaviour
                 break;
         }
         selectedPlayer = null;
+        Player.localIngamePlayer.turnEnded = true;
+    }
+
+    private void SetSleepState(bool isSleeping)
+    {
+        UIManager.Singleton.asleepUI.SetActive(isSleeping);
+        UIManager.Singleton.endTurnButton.SetActive(!isSleeping);
+        canvasGroup.alpha = isSleeping ? 0 : 1;
     }
 
     private void WaitForNightEnd()
     {
-        UIManager.Singleton.asleepUI.SetActive(true);
-        UIManager.Singleton.endTurnButton.SetActive(false);
-        while (isNight);
-        UIManager.Singleton.asleepUI.SetActive(false);
+        //Turns on UI that makes the user inactive
+        SetSleepState(true);
+        if (isNight) return;
+        SetSleepState(false);
     }
 
     private void WaitForDetective()
     {
-        UIManager.Singleton.asleepUI.SetActive(true);
-        UIManager.Singleton.endTurnButton.SetActive(false);
-        while (currentTurn != "Detective" && currentTurn != "") ;
-        UIManager.Singleton.asleepUI.SetActive(false);
-        UIManager.Singleton.endTurnButton.SetActive(true);
-        Debug.Log(WaitForSelection() ? "Bad" : "Good");
-        selectedPlayer = null;
+        //Turns on UI that makes the user inactive
+        SetSleepState(true);
+
+        if (currentTurn != "Detective" && currentTurn != "") return; //Reruns the function if the turn is not yet theirs
+
+        //Turns off UI that makes the user inactive
+        SetSleepState(false);
         playerSelected = false;
         currentTurn = "";
         isNight = false;
         UIManager.Singleton.endTurnButton.SetActive(false);
-        WaitForNightEnd();
+        WaitForNightEnd(); //Run function which just waits until the night ends
     }
 
     private void WaitForWitch()
     {
-        UIManager.Singleton.asleepUI.SetActive(true);
-        while (currentTurn != "Witch" && currentTurn != "") ;
-        UIManager.Singleton.asleepUI.SetActive(false);
-        UIManager.Singleton.endTurnButton.SetActive(true);
+        //Turns on UI that makes the user inactive
+        SetSleepState(true);
+
+        if (currentTurn != "Witch" && currentTurn != "") return; //Reruns the function if the turn is not yet theirs
+        
+        //Turns off UI that makes the user inactive
+        SetSleepState(false);
         Debug.Log(WaitForSelection());
         currentTurn = "Detective";
         UIManager.Singleton.endTurnButton.SetActive(false);
-        WaitForNightEnd();
+        WaitForNightEnd(); //Run function which just waits until the night ends
     }
 
     private void WaitForWerewolf()
     {
-        UIManager.Singleton.asleepUI.SetActive(true);
-        while (currentTurn != "Werewolf" && currentTurn != "") ;
-        UIManager.Singleton.asleepUI.SetActive(false);
-        UIManager.Singleton.endTurnButton.SetActive(true);
-        Debug.Log(WaitForSelection()) ;
-        UIManager.Singleton.endTurnButton.SetActive(false);
-        currentTurn = "Witch";
-        WaitForNightEnd();
+        //Turns off UI that makes the user inactive
+        playerSelected = false;
+        SetSleepState(currentTurn != "Werewolf");
+        Player selected = WaitForSelection();
+        if (selected.role.roleName != "")
+        {
+            EndTurn();
+        }
+        if (Player.localIngamePlayer.turnEnded)
+        {
+            UIManager.Singleton.endTurnButton.SetActive(false);
+            WaitForNightEnd(); //Run function which just waits until the night ends
+        }
+    }
+
+    public void SendSelected()
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.selectedPlayer); //Create message with the id of the selectedPlayer along with the selectionType of the selection
+        message.AddUShort(selectedPlayer.id);
+        message.AddString(Player.localIngamePlayer.role.selectionType.ToString());
     }
 }

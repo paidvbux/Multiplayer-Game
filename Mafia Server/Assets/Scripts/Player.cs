@@ -15,8 +15,6 @@ public class Player : MonoBehaviour
 
     public int roleId;
 
-    public static List<int> rolesAvailable;
-
     private void OnDestroy()
     {
         list.Remove(id);
@@ -47,18 +45,6 @@ public class Player : MonoBehaviour
         //list[id].SendRole(); //Send to all
     }
 
-    public static void StartGame(ushort id, bool gameStarted)
-    {
-        list[0].SendGameStart(); //Starts the game for everyone (idk if it works lol i will need to fix later)
-    }
-
-    public static void SendMessage(ushort id, string user, string text)
-    {
-        string[] info = new string[2] { user, text }; //Creates an array of the username and the message
-        foreach (Player player in list.Values) //Sends the message to each other player
-            player.SendMsg(info);
-    }
-
     #region Messages
     private void SendSpawned()
     {
@@ -68,11 +54,6 @@ public class Player : MonoBehaviour
     private void SendSpawned(ushort toClientId)
     {
         NetworkManager.Singleton.server.Send(AddSpawnData(Message.Create(MessageSendMode.reliable, ServerToClientId.playerSpawned)), toClientId); //Sends a message containing the spawn data of the player to everyone
-    }
-
-    private void SendGameStart()
-    {
-        NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.gameStarted).AddBool(true)); //Sends a message containing the boolean that tells the game to start 
     }
     
     //Probably works without the need of this function
@@ -85,11 +66,6 @@ public class Player : MonoBehaviour
     private void SendRole(ushort toClientId)
     {
         NetworkManager.Singleton.server.Send(Message.Create(MessageSendMode.reliable, ServerToClientId.playerRole).AddUShort(id).AddInt(roleId), toClientId); //Sends the id of the role to each player
-    }
-
-    private void SendMsg(string[] info)
-    {
-        NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.message).AddStrings(info)); //Sends the message containing the username and text of the message
     }
 
     private Message AddSpawnData(Message message)
@@ -106,28 +82,6 @@ public class Player : MonoBehaviour
     private static void Name(ushort fromClientId, Message message) //Runs the function when it receives the spawn request
     {
         Spawn(fromClientId, message.GetString());
-    }
-
-    [MessageHandler((ushort)ClientToServerId.gameStarted)]
-    private static void GameStarted(ushort fromClientId, Message message) //Runs the function to start the game when requested
-    {
-        StartGame(fromClientId, message.GetBool());
-        rolesAvailable = new List<int>(0); //Assigns the roles randomly
-        for (int i = 0; i < NetworkManager.Singleton.server.ClientCount; i++) rolesAvailable.Add(i);
-        foreach (ushort ids in list.Keys)
-        {
-            print(rolesAvailable.Count - 1);
-            int _roleId = rolesAvailable[Random.Range(0, rolesAvailable.Count - 1)];
-            rolesAvailable.Remove(_roleId);
-            AddRole(ids, _roleId);
-        }
-    }
-
-    [MessageHandler((ushort)ClientToServerId.message)]
-    private static void MessageSend(ushort fromClientId, Message message) //Runs the message send function
-    {
-        string[] info = message.GetStrings();
-        SendMessage(fromClientId, info[0], info[1]);
     }
 
     #endregion

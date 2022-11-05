@@ -179,6 +179,7 @@ public class GameLogic : MonoBehaviour
         playerSelected = false;
         SetSleepState(currentTurn != "Werewolf");
         Player selected = WaitForSelection();
+        if (selected == null) return;
         if (selected.role.roleName != "")
         {
             EndTurn();

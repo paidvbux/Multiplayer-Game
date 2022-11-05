@@ -79,7 +79,6 @@ public class ChatScript : MonoBehaviour
             }
             storedMessages.Add(str); //Add the message to the list of messages
         }
-        storedMessages.Reverse(); //Reverses the list to make the newer messsages at the bottom
         string text = "";
         foreach (string message in storedMessages) //Arranges the list of messages
         {

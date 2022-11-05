@@ -106,5 +106,6 @@ public class UIManager : MonoBehaviour
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.message); //Creates the message
         message.AddStrings(messageInfo); //Adds the info
         NetworkManager.Singleton.client.Send(message); //Sends the message to the server
+        chatBox.text = "";
     }
 }

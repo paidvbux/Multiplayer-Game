@@ -169,9 +169,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17bbeb9077185294db398f045bf9e032, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asleepUI: {fileID: 0}
   nameText: {fileID: 2761680139980336805}
   playerIDText: {fileID: 4669983722617814272}
+  username: 
   roleId: 0
   role: {fileID: 0}
   selectionObject: {fileID: 1733196845}
@@ -223,10 +223,10 @@ MonoBehaviour:
       - m_Target: {fileID: -2964834651090123631}
         m_TargetAssemblyTypeName: Player, Assembly-CSharp
         m_MethodName: SelectPlayer
-        m_Mode: 1
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: -2964834651090123631}
+          m_ObjectArgumentAssemblyTypeName: Player, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 

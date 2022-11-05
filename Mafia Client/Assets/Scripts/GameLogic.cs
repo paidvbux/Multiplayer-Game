@@ -53,6 +53,11 @@ public class GameLogic : MonoBehaviour
 
     void Update()
     {
+        if (selectedPlayer != null)
+        {
+            UIManager.Singleton.cancelButton.SetActive(!(Player.localIngamePlayer.role.selectionType == Role.SelectionType.None && Player.localIngamePlayer.role.selectionType != Role.SelectionType.Wolf));
+        }
+
         if (Player.localIngamePlayer != null) //Checks if there is a player in game
         {
             if (Player.localIngamePlayer.role != null && UIManager.Singleton.playerImage.sprite != Player.localIngamePlayer.role.displayImage) //Changes the image of the role
@@ -96,6 +101,14 @@ public class GameLogic : MonoBehaviour
         }
     }
 
+    public void CancelSelection()
+    {
+        UIManager.Singleton.cancelButton.SetActive(false);
+        selectedPlayer.selectionObject.SetActive(false);
+        playerSelected = false;
+        selectedPlayer = null;
+    }
+
     public Player WaitForSelection() //Check for selection
     {
         if (!playerSelected) return null;
@@ -104,6 +117,7 @@ public class GameLogic : MonoBehaviour
 
     public void ConfirmSelection()
     {
+        if (selectedPlayer == null) return;
         playerSelected = true;
     }
 

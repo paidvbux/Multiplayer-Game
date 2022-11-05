@@ -35,10 +35,6 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        //Turns on the selection overlay on the player if the player is selected
-        if (GameLogic.Singleton.selectedPlayer == this) selectionObject.SetActive(true);
-        else selectionObject.SetActive(false);
-
         //Check if there is a room or not and do host specific things
         if (UIManager.Singleton.ingamePlayerList.Count >= 1 && isLocal)
         {
@@ -173,20 +169,23 @@ public class Player : MonoBehaviour
         foreach (Player player in UIManager.Singleton.pregamePlayerList) { if (player.isLocal) { localPregamePlayer = player; break; } }
     } //Update the players so that the game does not break
 
-    public void SelectPlayer()
+    public void SelectPlayer(Player player)
     {
-        if (GameLogic.Singleton.currentTurn == "Werewolf")
+        if (pregameRoom.Values.Contains<Player>(player)) return;
+        foreach (Player p in room.Values)
         {
-            ActiveSelect();
-            return;
-        }
-        if (!isLocal) GameLogic.Singleton.selectedPlayer = this;
+            if (p.id == player.id)
+            {
+                p.selectionObject.SetActive(true);
+                GameLogic.Singleton.playerSelected = true;
+                GameLogic.Singleton.selectedPlayer = p;
+            }
+            else
+            {
+                p.selectionObject.SetActive(false);
+            }
+        } //Select
     } //Select the player
-
-    public void ActiveSelect()
-    {
-
-    } //Select
 
     [MessageHandler((ushort)ServerToClientId.message)]
     public static void AddMessage(Message message) //Adds the message to the chat message array

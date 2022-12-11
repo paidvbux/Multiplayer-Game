@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class GameLogic : MonoBehaviour
 {
+    public Deck[] decks;
+
     private static GameLogic _singleton;
     public static GameLogic Singleton
     {
@@ -31,11 +33,6 @@ public class GameLogic : MonoBehaviour
         Singleton = this;
     }
 
-    public static void Select(ushort selectedId) //Sends the selected player to everyone in the game room
-    {
-        SendSelectedToAll(selectedId);
-    }
-
     private static void SendSelectedToAll(ushort selectedId)
     {
         NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.selectedPlayer).AddUShort(selectedId)); //Sends the message
@@ -44,7 +41,7 @@ public class GameLogic : MonoBehaviour
     [MessageHandler((ushort)ClientToServerId.selectedPlayer)]
     private static void SelectedPlayer(ushort fromClientId, Message message) //Runs the function to send the selected player
     {
-        Select(message.GetUShort());
+        SendSelectedToAll(message.GetUShort());
     }
 
 }

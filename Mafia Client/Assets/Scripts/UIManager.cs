@@ -100,7 +100,7 @@ public class UIManager : MonoBehaviour
         NetworkManager.Singleton.client.Send(message); //Sends the message to the server
     }
 
-    public void SendMessage(TMP_InputField chatBox)
+    public void SendChat(TMP_InputField chatBox)
     {
         if (string.IsNullOrEmpty(chatBox.text)) return; //If the string is empty, ignore the click
         string[] messageInfo = new string[] { Player.localIngamePlayer.username, chatBox.text }; //Create a list that contains the username of the sender and the message

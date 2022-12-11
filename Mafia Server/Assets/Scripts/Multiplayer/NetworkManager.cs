@@ -10,6 +10,7 @@ public enum ServerToClientId : ushort //Creates enums that allow the server to c
     playerRole,
     gameStarted,
     selectedPlayer,
+    activeSelectedPlayer,
     endNight,
     message,
 }
@@ -20,6 +21,7 @@ public enum ClientToServerId : ushort //Creates enums that allow the server to c
     playerRole,
     gameStarted,
     selectedPlayer,
+    activeSelectedPlayer,
     endNight,
     message,
 }
@@ -88,21 +90,35 @@ public class NetworkManager : MonoBehaviour
         server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.gameStarted).AddBool(true)); //Sends a message containing the boolean that tells the game to start 
     }
 
-    public static void SendMessage(ushort id, string user, string text)
+    public static void SendChat(ushort id, string user, string text)
     {
         string[] info = new string[2] { user, text }; //Creates an array of the username and the message
-        NetworkManager.Singleton.SendMsg(info);
+        Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.message).AddStrings(info)); //Sends the message containing the username and text of the message
     }
-    private void SendMsg(string[] info)
+    
+    public static void ActiveSelection(ushort fromId, ushort id)
     {
-        NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.message).AddStrings(info)); //Sends the message containing the username and text of the message
+        foreach (Player player in Player.list.Values)
+        {
+            if (player.role.isBad)
+            {
+                Singleton.server.Send(Message.Create(MessageSendMode.reliable, ServerToClientId.activeSelectedPlayer).AddUShorts(new ushort[] { fromId, id }), player.id);
+                print(new ushort[]{fromId, id});
+            }
+        }
     }
 
     [MessageHandler((ushort)ClientToServerId.message)]
-    private static void MessageSend(ushort fromClientId, Message message) //Runs the message send function
+    private static void ReceiveChat(ushort fromClientId, Message message) //Runs the message send function
     {
         string[] info = message.GetStrings();
-        SendMessage(fromClientId, info[0], info[1]);
+        SendChat(fromClientId, info[0], info[1]);
+    }
+
+    [MessageHandler((ushort)ClientToServerId.activeSelectedPlayer)]
+    public static void UpdateSelection(ushort fromClientId, Message message)
+    {
+        ActiveSelection(fromClientId, message.GetUShort());
     }
 
     [MessageHandler((ushort)ClientToServerId.gameStarted)]

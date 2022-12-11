@@ -9,6 +9,7 @@ public enum ServerToClientId : ushort //Creates enums that allow the server to c
     playerRole,
     gameStarted,
     selectedPlayer,
+    activeSelectedPlayer,
     endNight,
     message,
 }
@@ -19,6 +20,7 @@ public enum ClientToServerId : ushort //Creates enums that allow the server to c
     playerRole,
     gameStarted,
     selectedPlayer,
+    activeSelectedPlayer,
     endNight,
     message,
 }

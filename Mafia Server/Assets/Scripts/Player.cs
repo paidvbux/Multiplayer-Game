@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
     public ushort id { get; private set; }
     public string username { get; private set; }
 
+    public Role role;
     public int roleId;
 
     private void OnDestroy()
@@ -39,6 +40,7 @@ public class Player : MonoBehaviour
     public static void AddRole(ushort id, int _roleId)
     {
         list[id].roleId = _roleId; //Assigns it server side so less network traffic
+        list[id].role = GameLogic.Singleton.decks[0].roles[_roleId];
         foreach (Player otherPlayer in list.Values) //Sends the message to each of the players telling each player of their role
             otherPlayer.SendRole(id);
 
@@ -56,13 +58,6 @@ public class Player : MonoBehaviour
         NetworkManager.Singleton.server.Send(AddSpawnData(Message.Create(MessageSendMode.reliable, ServerToClientId.playerSpawned)), toClientId); //Sends a message containing the spawn data of the player to everyone
     }
     
-    //Probably works without the need of this function
-
-    //private void SendRole()
-    //{
-    //    NetworkManager.Singleton.server.SendToAll(Message.Create(MessageSendMode.reliable, ServerToClientId.playerRole).AddUShort(id).AddInt(roleId));
-    //}
-
     private void SendRole(ushort toClientId)
     {
         NetworkManager.Singleton.server.Send(Message.Create(MessageSendMode.reliable, ServerToClientId.playerRole).AddUShort(id).AddInt(roleId), toClientId); //Sends the id of the role to each player

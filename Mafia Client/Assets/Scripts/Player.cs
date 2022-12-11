@@ -26,6 +26,7 @@ public class Player : MonoBehaviour
     public Role role; //Holds the role of the player
 
     public GameObject selectionObject; //Holds the image that shows that the player is selected
+    public bool selectedActively;
 
     [HideInInspector] public bool turnEnded; //Holds if the player's turn has ended
     private void Start()
@@ -55,8 +56,8 @@ public class Player : MonoBehaviour
 
     public static void SetRole(ushort id, int _roleId)
     {
-        room[id].role = GameLogic.Singleton.roles[_roleId];
-        pregameRoom[id].role = GameLogic.Singleton.roles[_roleId];
+        room[id].role = GameLogic.Singleton.decks[0].roles[_roleId];
+        pregameRoom[id].role = GameLogic.Singleton.decks[0].roles[_roleId];
 
         room[id].roleId = _roleId;
         pregameRoom[id].roleId = _roleId;
@@ -171,7 +172,7 @@ public class Player : MonoBehaviour
 
     public void SelectPlayer(Player player)
     {
-        if (pregameRoom.Values.Contains<Player>(player)) return;
+        if (pregameRoom.Values.Contains(player)) return;
         foreach (Player p in room.Values)
         {
             if (p.id == player.id)
@@ -180,15 +181,33 @@ public class Player : MonoBehaviour
                 GameLogic.Singleton.playerSelected = true;
                 GameLogic.Singleton.selectedPlayer = p;
             }
+            else if (p.selectedActively)
+            {
+                p.selectionObject.SetActive(true);
+            }
             else
             {
                 p.selectionObject.SetActive(false);
             }
         } //Select
+        
+        if (localIngamePlayer.role.isBad)
+        {
+        //    ActiveSelect();
+        }
+
     } //Select the player
 
+    public static void ActiveSelect()
+    {
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.activeSelectedPlayer);
+        message.AddUShort(GameLogic.Singleton.selectedPlayer.id);
+
+        NetworkManager.Singleton.client.Send(message);
+    }
+
     [MessageHandler((ushort)ServerToClientId.message)]
-    public static void AddMessage(Message message) //Adds the message to the chat message array
+    public static void AddChat(Message message) //Adds the message to the chat message array
     {
         string[] storedStrings = message.GetStrings(); //Creates a string array to hold the username of the sender and the message sent
         Player selectedPlayer = null; //Creates a temp player reference for later use

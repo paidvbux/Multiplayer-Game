@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class GameLogic : MonoBehaviour
 {
-    public Role[] roles;
+    public Deck[] decks;
 
     private static GameLogic _singleton;
     public static GameLogic Singleton
@@ -115,28 +115,14 @@ public class GameLogic : MonoBehaviour
         return selectedPlayer;
     }
 
-    public void ConfirmSelection()
-    {
-        if (selectedPlayer == null) return;
-        playerSelected = true;
-    }
-
     public void EndTurn()
     {
-        switch (currentTurn)
-        {
-            case "Detective":
-                currentTurn = "";
-                bool isBad = selectedPlayer.role.isBad;
-                Debug.Log(isBad);
-                break;
-            case "Witch":
-                currentTurn = "Detective";
-                break;
-            case "Werewolf":
-                currentTurn = "Witch";
-                break;
-        }
+        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.selectedPlayer);
+        message.AddUShort(selectedPlayer.id);
+        print(message.GetUShort());
+
+        NetworkManager.Singleton.client.Send(message);
+
         selectedPlayer = null;
         Player.localIngamePlayer.turnEnded = true;
     }
@@ -192,12 +178,7 @@ public class GameLogic : MonoBehaviour
         //Turns off UI that makes the user inactive
         playerSelected = false;
         SetSleepState(currentTurn != "Werewolf");
-        Player selected = WaitForSelection();
-        if (selected == null) return;
-        if (selected.role.roleName != "")
-        {
-            EndTurn();
-        }
+        if (!playerSelected) return;
         if (Player.localIngamePlayer.turnEnded)
         {
             UIManager.Singleton.endTurnButton.SetActive(false);
@@ -205,10 +186,17 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    public void SendSelected()
+    [MessageHandler((ushort)ServerToClientId.activeSelectedPlayer)]
+    public static void GetActiveSelection(Message message)
     {
-        Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.selectedPlayer); //Create message with the id of the selectedPlayer along with the selectionType of the selection
-        message.AddUShort(selectedPlayer.id);
-        message.AddString(Player.localIngamePlayer.role.selectionType.ToString());
+        ushort[] info = message.GetUShorts();
+        Player.room[info[1]].selectedActively = true;
+        Player.room[info[1]].selectionObject.SetActive(true);
+    }
+
+    [MessageHandler((ushort)ServerToClientId.selectedPlayer)]
+    public static void GetSelection(Message message)
+    {
+        print(Player.room[message.GetUShort()].username);
     }
 }

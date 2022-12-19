@@ -119,7 +119,6 @@ public class GameLogic : MonoBehaviour
     {
         Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.selectedPlayer);
         message.AddUShort(selectedPlayer.id);
-        print(message.GetUShort());
 
         NetworkManager.Singleton.client.Send(message);
 

@@ -41,6 +41,7 @@ public class GameLogic : MonoBehaviour
     [MessageHandler((ushort)ClientToServerId.selectedPlayer)]
     private static void SelectedPlayer(ushort fromClientId, Message message) //Runs the function to send the selected player
     {
+        print(message.GetUShort());
         SendSelectedToAll(message.GetUShort());
     }
 

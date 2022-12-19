@@ -172,7 +172,7 @@ public class Player : MonoBehaviour
 
     public void SelectPlayer(Player player)
     {
-        if (pregameRoom.Values.Contains(player)) return;
+        if (pregameRoom.Values.Contains(player)) return; //Checks if this is run in the Pregame menu, returns if it is
         foreach (Player p in room.Values)
         {
             if (p.id == player.id)
